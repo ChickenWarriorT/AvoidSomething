@@ -32,10 +32,10 @@ public class PlayerController : MonoBehaviour
         {
             MoveUp();
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            MoveDown();
-        }
+        //if (Input.GetKeyDown(KeyCode.DownArrow))
+        //{
+        //    MoveDown();
+        //}
     }
 
     private void MoveLeft()
@@ -60,8 +60,8 @@ public class PlayerController : MonoBehaviour
     {
         if (currentRow < trafficManager.rows - 1)
         {
-            currentRow++;
-            MoveToGridPosition();
+            //currentRow++;
+            //MoveToGridPosition();
         }
     }
 
@@ -70,7 +70,7 @@ public class PlayerController : MonoBehaviour
         if (currentRow > 0)
         {
             currentRow--;
-            MoveToGridPosition();
+            //MoveToGridPosition();
         }
     }
 

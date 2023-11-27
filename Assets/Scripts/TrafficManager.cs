@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class TrafficManager : MonoBehaviour
 {
@@ -11,15 +13,17 @@ public class TrafficManager : MonoBehaviour
     public int rows = 4; // 行数
     [Header("列数")]
     public int columns = 3; // 列数
+    [Header("车辆初始化不会生成的格子")]
+    public int excludedRows = 5;
 
     private List<GameObject> cars = new List<GameObject>(); // 活动车辆列表
-    [Header("格子宽度")]
-    [SerializeField]
+    private HashSet<Tuple<int,int>> occupiedCells = new HashSet<Tuple<int, int>>();//已被占用格子
     private float cellWidth;
     [Header("格子高度")]
     [SerializeField]
     private float cellHeight;
 
+    public int numOfCarsToSpawn = 10;
     private float screenHeight;
     private float screenWidth;
     public float CellWidth { get => cellWidth; }
@@ -34,7 +38,7 @@ public class TrafficManager : MonoBehaviour
     }
     private void Start()
     {
-
+        SpawnCars(numOfCarsToSpawn);
     }
 
     private void InitializeGridPositions()
@@ -44,14 +48,11 @@ public class TrafficManager : MonoBehaviour
 
         cellWidth = screenWidth / columns;
 
-        // 根据相机视野和行高计算行数
-        int calculatedRows = Mathf.CeilToInt(screenHeight / cellHeight);
-
-        gridPositions = new Vector3[calculatedRows, columns];
+        gridPositions = new Vector3[rows, columns];
 
         Vector3 bottomLeft = new Vector3(-screenWidth / 2, -screenHeight / 2, 0);
 
-        for (int i = 0; i < calculatedRows; i++)
+        for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < columns; j++)
             {
@@ -63,14 +64,12 @@ public class TrafficManager : MonoBehaviour
     }
 
 
-
     void Update()
     {
         // 检测玩家的输入
         if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow))
         {
             MoveCars();
-            SpawnCar();
         }
     }
 
@@ -89,19 +88,53 @@ public class TrafficManager : MonoBehaviour
         }
     }
 
-    private void SpawnCar()
+    //所有格子自定义坐标的数组
+    private List<Tuple<int, int>> GetAllCellsCoordinate(int excludedRows)
     {
-        // 随机选择一个列来生成车辆
-        int column = Random.Range(0, columns);
-        // 计算车辆的生成位置
-        Vector3 spawnPosition = new Vector3(column * cellWidth - Camera.main.aspect * Camera.main.orthographicSize + cellWidth / 2, Camera.main.orthographicSize + cellHeight / 2, 0);
+        List<Tuple<int, int>> allCoordinates = new List<Tuple<int, int>>();
+        for (int i = excludedRows; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                allCoordinates.Add(new Tuple<int, int>(i, j));
+            }
+        }
+        return allCoordinates;
+    }
 
-        // 实例化车辆预制体
-        GameObject car = Instantiate(carPrefabs[Random.Range(0, carPrefabs.Length)], spawnPosition, Quaternion.identity);
+    //车辆生成
+    private void SpawnCars(int numOfCars)
+    {
 
-        SpriteUtils.AdjustSizeToFitCell(car, cellWidth, cellHeight);
+        List<Tuple<int, int>> allCoordinates = GetAllCellsCoordinate(excludedRows);
+        for (int i = 0; i < numOfCars; i++)
+        {
+            if (allCoordinates.Count == 0) return;
 
-        cars.Add(car);
+            int randomIndex = UnityEngine.Random.Range(0, allCoordinates.Count);
+            Tuple<int, int> selectedCell = allCoordinates[randomIndex];
+
+            //如果不在已占用位置中
+            if (!occupiedCells.Contains(selectedCell))
+            {
+                //车辆随机生成的位置
+                Vector3 spawnPosition = gridPositions[selectedCell.Item1, selectedCell.Item2];
+
+                // 实例化车辆预制体
+                GameObject car = Instantiate(carPrefabs[UnityEngine.Random.Range(0, carPrefabs.Length)], spawnPosition, Quaternion.identity);
+
+                SpriteUtils.AdjustSizeToFitCell(car, cellWidth, cellHeight);
+
+                cars.Add(car);
+                occupiedCells.Add(selectedCell);
+            }
+        }
+    }
+
+    //清除已占用位置
+    private void ClearOccupiedPositions()
+    {
+        occupiedCells.Clear();
     }
 
 
@@ -110,12 +143,18 @@ public class TrafficManager : MonoBehaviour
     // 在Unity编辑器的Scene视图中绘制格子
     void OnDrawGizmos()
     {
+        UpdateScreenAndCellSize();
+        if (gridPositions == null)
+        {
+            InitializeGridPositions();
+        }
+        
         // 重新计算屏幕宽度和高度以适应实际的行数和列数
         float totalGridHeight = cellHeight * rows;
         float totalGridWidth = cellWidth * columns;
 
         // 网格的左下角起始点
-        Vector3 bottomLeft = new Vector3(-totalGridWidth / 2, -totalGridHeight / 2, 0);
+        Vector3 bottomLeft = new Vector3(-screenWidth / 2, -screenHeight / 2, 0);
 
         Gizmos.color = Color.green;
 
@@ -135,10 +174,7 @@ public class TrafficManager : MonoBehaviour
             Gizmos.DrawLine(startPos, endPos);
         }
 
-        if (gridPositions == null)
-        {
-            InitializeGridPositions();
-        }
+
 
         // 绘制行列编号
         GUIStyle labelStyle = new GUIStyle();
@@ -149,11 +185,18 @@ public class TrafficManager : MonoBehaviour
         {
             for (int j = 0; j < columns; j++)
             {
-                Vector3 labelPosition = new Vector3(-totalGridWidth / 2 + cellWidth * j, -totalGridHeight / 2 + cellHeight * i, 0);
+                Vector3 labelPosition = new Vector3(bottomLeft.x + cellWidth * j + cellWidth / 2, bottomLeft.y + cellHeight * i + cellHeight / 2, 0);
                 labelPosition.x -= 0.5f;
-                Handles.Label(labelPosition, $"{i} C{j}", labelStyle);
+                Handles.Label(labelPosition, $"{i}，{j}", labelStyle);
             }
         }
+
+    }
+    private void UpdateScreenAndCellSize()
+    {
+        screenHeight = Camera.main.orthographicSize * 2f;
+        screenWidth = screenHeight * Camera.main.aspect;
+        cellWidth = screenWidth / columns;
     }
 
 #endif
