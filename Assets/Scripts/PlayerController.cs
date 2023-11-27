@@ -2,12 +2,24 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5f; // 控制车辆移动速度
-    public Transform[] lanes; // 定义车道位置
-    private int currentLane = 1; // 初始车道位置
+    private float cellWidth;
+    private float cellHeight;
+
+    private int currentRow = 0; // 初始行位置
+    private int currentColumn = 0; // 初始列位置
+    private TrafficManager trafficManager;
+
+    void Start()
+    {
+        trafficManager = TrafficManager._instance;
+        currentColumn = trafficManager.columns / 2;
+        // 根据格子大小调整玩家车辆的尺寸
+        SpriteUtils.AdjustSizeToFitCell(this.gameObject, trafficManager.CellWidth, trafficManager.CellHeight);
+    }
 
     void Update()
     {
+        // 检测玩家的输入并移动车辆
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MoveLeft();
@@ -20,36 +32,53 @@ public class PlayerController : MonoBehaviour
         {
             MoveUp();
         }
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            MoveDown();
+        }
     }
 
     private void MoveLeft()
     {
-        if (currentLane > 0)
+        if (currentColumn > 0)
         {
-            currentLane--;
-            MoveToLane(currentLane);
+            currentColumn--;
+            MoveToGridPosition();
         }
     }
 
     private void MoveRight()
     {
-        if (currentLane < lanes.Length - 1)
+        if (currentColumn < trafficManager.columns - 1)
         {
-            currentLane++;
-            MoveToLane(currentLane);
+            currentColumn++;
+            MoveToGridPosition();
         }
     }
 
     private void MoveUp()
     {
-
-        MoveToLane(currentLane);
-
+        if (currentRow < trafficManager.rows - 1)
+        {
+            currentRow++;
+            MoveToGridPosition();
+        }
     }
 
-    private void MoveToLane(int laneIndex)
+    private void MoveDown()
     {
-        Vector3 targetPosition = lanes[laneIndex].position;
-        transform.position = new Vector3(targetPosition.x, transform.position.y, 0);
+        if (currentRow > 0)
+        {
+            currentRow--;
+            MoveToGridPosition();
+        }
+    }
+
+    private void MoveToGridPosition()
+    {
+        // 获取目标格子的位置
+        Vector3 targetPosition = trafficManager.gridPositions[currentRow, currentColumn];
+        //立即移动到目标为止
+        transform.position = targetPosition;
     }
 }
