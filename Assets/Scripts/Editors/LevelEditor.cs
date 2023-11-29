@@ -1,5 +1,7 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 [CustomEditor(typeof(TrafficManager))]
 public class TrafficManagerEditor : Editor
@@ -26,48 +28,116 @@ public class TrafficManagerEditor : Editor
         }
 
         serializedObject.ApplyModifiedProperties();
+
+        // 添加生成网格的按钮
+        TrafficManager manager = (TrafficManager)target;
+        if (GUILayout.Button("Generate Grid Prefabs"))
+        {
+            GenerateGridPrefabs(manager);
+        }
+
+        // 添加清除网格的按钮
+        if (GUILayout.Button("Clear Grid Prefabs"))
+        {
+            ClearGridPrefabs(manager);
+        }
     }
 
+
+
+    private void GenerateGridPrefabs(TrafficManager manager)
+    {
+        if (manager.gridPrefab == null)
+        {
+            Debug.LogError("Grid prefab is not assigned!");
+            return;
+        }
+
+        for (int i = 0; i < manager.rows; i++)
+        {
+            for (int j = 0; j < manager.columns; j++)
+            {
+                Vector3 spawnPosition = manager.gridPositions[i, j];
+                GameObject prefabInstance = PrefabUtility.InstantiatePrefab(manager.gridPrefab, manager.transform) as GameObject;
+                prefabInstance.transform.position = spawnPosition;
+
+                // 设置Prefab实例的名字，包含其网格坐标
+                prefabInstance.name = $"Grid({i},{j})";
+
+                // 调整Prefab实例的大小以匹配格子的大小
+                AdjustPrefabSize(prefabInstance, manager.CellWidth, manager.CellHeight);
+            }
+        }
+    }
+    private void AdjustPrefabSize(GameObject prefab, float cellWidth, float cellHeight)
+    {
+        // 假设原Prefab的大小为1x1单位
+        Vector3 scale = new Vector3(cellWidth, cellHeight, 1);
+        prefab.transform.localScale = scale;
+    }
+
+    private void ClearGridPrefabs(TrafficManager manager)
+    {
+        // 注意：这个方法假设所有gridPrefab实例都是该对象的直接子对象
+        int childCount = manager.transform.childCount;
+        for (int i = childCount - 1; i >= 0; i--)
+        {
+            var child = manager.transform.GetChild(i);
+            if (child.gameObject.CompareTag("Grid")) // 确保只销毁gridPrefab实例
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+    }
     void OnSceneGUI()
     {
+
         TrafficManager manager = (TrafficManager)target;
 
         Event e = Event.current;
         if (e.type == EventType.MouseDown && e.button == 0)
         {
+            Debug.Log("hit");
             Ray ray = HandleUtility.GUIPointToWorldRay(e.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            if (hit.collider != null && hit.collider.gameObject.CompareTag("Grid"))
             {
-                Vector3 point = hit.point;
-                // 转换点到网格坐标
-                Vector2Int gridPos = WorldToGrid(point, manager);
-                // 在这个位置放置车辆
-                Debug.Log(gridPos);
+                Vector2Int gridPos = WorldToGrid(hit.collider.gameObject, manager);
+                
                 PlaceCar(manager, gridPos);
                 e.Use(); // 防止事件进一步传播
             }
         }
     }
 
-    private Vector2Int WorldToGrid(Vector3 worldPosition, TrafficManager manager)
+    private Vector2Int WorldToGrid(GameObject gridPrefab, TrafficManager manager)
     {
-        // 实现世界坐标到网格坐标的转换
-        // 需要根据你的网格系统调整这部分逻辑
-        // 以下是一个示例实现
-        Vector3 localPos = manager.transform.InverseTransformPoint(worldPosition);
-        int x = Mathf.FloorToInt(localPos.x / manager.CellWidth);
-        int y = Mathf.FloorToInt(localPos.y / manager.CellHeight);
-        return new Vector2Int(x, y);
+        // 假设每个gridPrefab的名字或其他属性包含了它的网格坐标
+        // 例如：gridPrefab的名字可能是 "Grid(2,3)"
+
+        string[] parts = gridPrefab.name.Trim().Split(new char[] { '(', ',', ')' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 3)
+        {
+            int x, y;
+            if (int.TryParse(parts[1], out x) && int.TryParse(parts[2], out y))
+            {
+                return new Vector2Int(x, y);
+            }
+        }
+
+        return new Vector2Int(-1, -1); // 返回一个无效的坐标，如果解析失败
     }
 
     private void PlaceCar(TrafficManager manager, Vector2Int gridPos)
     {
+        manager.InitializeGridPositions();
+        Debug.Log(gridPos);
         // 实现在网格位置放置车辆的逻辑
         // 这可以是在Scene视图中绘制一个标记，或者实际实例化一个车辆预览
         // 以下是一个基本的实例化逻辑
         if (carPrefabs.arraySize > 0)
         {
+            Debug.Log(manager.gridPositions.Length);
             Vector3 spawnPosition = manager.gridPositions[gridPos.x, gridPos.y];
             GameObject carPrefab = carPrefabs.GetArrayElementAtIndex(0).objectReferenceValue as GameObject;
             PrefabUtility.InstantiatePrefab(carPrefab, manager.transform);

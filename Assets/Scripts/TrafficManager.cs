@@ -7,6 +7,7 @@ using static UnityEditor.PlayerSettings;
 public class TrafficManager : MonoBehaviour
 {
     public static TrafficManager _instance;
+    public GameObject gridPrefab; // 用于引用格子的Prefab
     public GameObject[] carPrefabs; // 车辆预制体
     public Vector3[,] gridPositions; // 二维数组来存储格子的中心位置
     [Header("行数")]
@@ -41,24 +42,27 @@ public class TrafficManager : MonoBehaviour
         SpawnCars(numOfCarsToSpawn);
     }
 
-    private void InitializeGridPositions()
+    public void InitializeGridPositions()
     {
-        screenHeight = Camera.main.orthographicSize * 2f;
-        screenWidth = screenHeight * Camera.main.aspect;
-
-        cellWidth = screenWidth / columns;
-
-        gridPositions = new Vector3[rows, columns];
-
-        Vector3 bottomLeft = new Vector3(-screenWidth / 2, -screenHeight / 2, 0);
-
-        for (int i = 0; i < rows; i++)
+        if (gridPositions == null)
         {
-            for (int j = 0; j < columns; j++)
+            screenHeight = Camera.main.orthographicSize * 2f;
+            screenWidth = screenHeight * Camera.main.aspect;
+
+            cellWidth = screenWidth / columns;
+
+            gridPositions = new Vector3[rows, columns];
+
+            Vector3 bottomLeft = new Vector3(-screenWidth / 2, -screenHeight / 2, 0);
+
+            for (int i = 0; i < rows; i++)
             {
-                float xPosition = bottomLeft.x + cellWidth * j + cellWidth / 2;
-                float yPosition = bottomLeft.y + cellHeight * i + cellHeight / 2;
-                gridPositions[i, j] = new Vector3(xPosition, yPosition, 0);
+                for (int j = 0; j < columns; j++)
+                {
+                    float xPosition = bottomLeft.x + cellWidth * j + cellWidth / 2;
+                    float yPosition = bottomLeft.y + cellHeight * i + cellHeight / 2;
+                    gridPositions[i, j] = new Vector3(xPosition, yPosition, 0);
+                }
             }
         }
     }
@@ -144,10 +148,9 @@ public class TrafficManager : MonoBehaviour
     void OnDrawGizmos()
     {
         UpdateScreenAndCellSize();
-        if (gridPositions == null)
-        {
-            InitializeGridPositions();
-        }
+
+        InitializeGridPositions();
+        
         
         // 重新计算屏幕宽度和高度以适应实际的行数和列数
         float totalGridHeight = cellHeight * rows;
