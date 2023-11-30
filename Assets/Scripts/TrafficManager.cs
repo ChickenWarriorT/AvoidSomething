@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -10,19 +11,25 @@ public class TrafficManager : MonoBehaviour
     public GameObject gridPrefab; // 用于引用格子的Prefab
     public GameObject[] carPrefabs; // 车辆预制体
     public Vector3[,] gridPositions; // 二维数组来存储格子的中心位置
-    [Header("行数")]
+    [Header("行数和列数")]
     public int rows = 4; // 行数
-    [Header("列数")]
     public int columns = 3; // 列数
+
+    [Header("等待时间设置")]
+    public float waitTimeAfterPlayerMove = 1.0f; // 玩家移动后的等待时间
+    public float waitTimeAfterCarsMove = 1.0f; // 其他车辆移动后的等待时间
+
     [Header("车辆初始化不会生成的格子")]
     public int excludedRows = 5;
 
     private List<GameObject> cars = new List<GameObject>(); // 活动车辆列表
-    private HashSet<Tuple<int,int>> occupiedCells = new HashSet<Tuple<int, int>>();//已被占用格子
+    private HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();//已被占用格子
     private float cellWidth;
     [Header("格子高度")]
     [SerializeField]
     private float cellHeight;
+
+    public CarEventSO playerMovedEvent;
 
     public int numOfCarsToSpawn = 10;
     private float screenHeight;
@@ -30,6 +37,7 @@ public class TrafficManager : MonoBehaviour
     public float CellWidth { get => cellWidth; }
     public float CellHeight { get => cellHeight; }
 
+    public bool isRandomSpawnCar;
     void Awake()
     {
         _instance = this;
@@ -37,11 +45,28 @@ public class TrafficManager : MonoBehaviour
         // 初始化格子位置数组
         InitializeGridPositions();
     }
-    private void Start()
+
+    private void OnEnable()
     {
-        SpawnCars(numOfCarsToSpawn);
+        playerMovedEvent.OnEventRaised += OnPlayerMoved;
+    }
+    private void OnDisable()
+    {
+        playerMovedEvent.OnEventRaised -= OnPlayerMoved;
     }
 
+    private void OnPlayerMoved()
+    {
+
+    }
+
+    private void Start()
+    {
+        if (isRandomSpawnCar)
+            SpawnCars(numOfCarsToSpawn);
+    }
+
+    //初始化格子坐标
     public void InitializeGridPositions()
     {
         if (gridPositions == null)
@@ -93,14 +118,14 @@ public class TrafficManager : MonoBehaviour
     }
 
     //所有格子自定义坐标的数组
-    private List<Tuple<int, int>> GetAllCellsCoordinate(int excludedRows)
+    private List<Vector2Int> GetAllCellsCoordinate(int excludedRows)
     {
-        List<Tuple<int, int>> allCoordinates = new List<Tuple<int, int>>();
+        List<Vector2Int> allCoordinates = new List<Vector2Int>();
         for (int i = excludedRows; i < rows; i++)
         {
             for (int j = 0; j < columns; j++)
             {
-                allCoordinates.Add(new Tuple<int, int>(i, j));
+                allCoordinates.Add(new Vector2Int(i, j));
             }
         }
         return allCoordinates;
@@ -110,19 +135,19 @@ public class TrafficManager : MonoBehaviour
     private void SpawnCars(int numOfCars)
     {
 
-        List<Tuple<int, int>> allCoordinates = GetAllCellsCoordinate(excludedRows);
+        List<Vector2Int> allCoordinates = GetAllCellsCoordinate(excludedRows);
         for (int i = 0; i < numOfCars; i++)
         {
             if (allCoordinates.Count == 0) return;
 
             int randomIndex = UnityEngine.Random.Range(0, allCoordinates.Count);
-            Tuple<int, int> selectedCell = allCoordinates[randomIndex];
+            var selectedCell = allCoordinates[randomIndex];
 
             //如果不在已占用位置中
             if (!occupiedCells.Contains(selectedCell))
             {
                 //车辆随机生成的位置
-                Vector3 spawnPosition = gridPositions[selectedCell.Item1, selectedCell.Item2];
+                Vector3 spawnPosition = gridPositions[selectedCell.x, selectedCell.y];
 
                 // 实例化车辆预制体
                 GameObject car = Instantiate(carPrefabs[UnityEngine.Random.Range(0, carPrefabs.Length)], spawnPosition, Quaternion.identity);
@@ -141,8 +166,26 @@ public class TrafficManager : MonoBehaviour
         occupiedCells.Clear();
     }
 
+    //携程
+    private IEnumerator HandleOtherCarsMovement()
+    {
+        // 禁止玩家移动（如果有必要）
+        // 例如，可以设置PlayerController的一个标志来禁止移动
 
+        // 等待玩家移动后的等待时间
+        yield return new WaitForSeconds(waitTimeAfterPlayerMove);
 
+        // 移动其他车辆
+        MoveCars();
+
+        // 再次等待，以给其他车辆移动留出时间
+        yield return new WaitForSeconds(waitTimeAfterCarsMove);
+
+        // 允许玩家再次操作
+        // 例如，重置PlayerController的标志以允许移动
+    }
+
+    #region Scene 格子显示
 #if UNITY_EDITOR
     // 在Unity编辑器的Scene视图中绘制格子
     void OnDrawGizmos()
@@ -150,8 +193,8 @@ public class TrafficManager : MonoBehaviour
         UpdateScreenAndCellSize();
 
         InitializeGridPositions();
-        
-        
+
+
         // 重新计算屏幕宽度和高度以适应实际的行数和列数
         float totalGridHeight = cellHeight * rows;
         float totalGridWidth = cellWidth * columns;
@@ -203,4 +246,5 @@ public class TrafficManager : MonoBehaviour
     }
 
 #endif
+    #endregion
 }
