@@ -321,12 +321,13 @@ MonoBehaviour:
   - {fileID: 589462625413882854, guid: 53060b365beb70c41be38188adcf34f4, type: 3}
   rows: 18
   columns: 5
-  waitTimeAfterPlayerMove: 1
-  waitTimeAfterCarsMove: 1
+  waitTimeAfterPlayerMove: 0.2
+  waitTimeAfterCarsMove: 0
   excludedRows: 4
   cellHeight: 10
   playerMovedEvent: {fileID: 11400000, guid: 9ebc79f938f18ab4b8dc2f8e8d63c49d, type: 2}
-  numOfCarsToSpawn: 100
+  playerTurn: 1
+  numOfCarsToSpawn: 20
   isRandomSpawnCar: 1
 --- !u!1 &1070395077
 GameObject:
@@ -433,7 +434,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1597753193
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -494,8 +495,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1597753192}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 29.8229, y: 52.44357, z: 29.8229}
+  m_LocalPosition: {x: 0, y: 66.2262, z: 0}
+  m_LocalScale: {x: 29.8229, y: 184.89969, z: 29.8229}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -555,4 +556,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 967ee4f2393e57040b46e4dcd9f6e730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canMove: 1
+  playerMovedEvent: {fileID: 11400000, guid: 9ebc79f938f18ab4b8dc2f8e8d63c49d, type: 2}

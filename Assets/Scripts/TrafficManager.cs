@@ -16,8 +16,8 @@ public class TrafficManager : MonoBehaviour
     public int columns = 3; // 列数
 
     [Header("等待时间设置")]
-    public float waitTimeAfterPlayerMove = 1.0f; // 玩家移动后的等待时间
-    public float waitTimeAfterCarsMove = 1.0f; // 其他车辆移动后的等待时间
+    public float waitTimeAfterPlayerMove = 0.5f; // 玩家移动后的等待时间
+    public float waitTimeAfterCarsMove = 0.5f; // 其他车辆移动后的等待时间
 
     [Header("车辆初始化不会生成的格子")]
     public int excludedRows = 5;
@@ -29,8 +29,10 @@ public class TrafficManager : MonoBehaviour
     [SerializeField]
     private float cellHeight;
 
+    [Header("事件")]
     public CarEventSO playerMovedEvent;
 
+    public bool playerTurn = true;
     public int numOfCarsToSpawn = 10;
     private float screenHeight;
     private float screenWidth;
@@ -57,7 +59,8 @@ public class TrafficManager : MonoBehaviour
 
     private void OnPlayerMoved()
     {
-
+        //玩家移动后，其他车辆延迟移动
+        StartCoroutine(HandleOtherCarsMovement());
     }
 
     private void Start()
@@ -95,11 +98,7 @@ public class TrafficManager : MonoBehaviour
 
     void Update()
     {
-        // 检测玩家的输入
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            MoveCars();
-        }
+
     }
 
     private void MoveCars()
@@ -166,10 +165,13 @@ public class TrafficManager : MonoBehaviour
         occupiedCells.Clear();
     }
 
-    //携程
+    #region 携程
+
+    //
     private IEnumerator HandleOtherCarsMovement()
     {
         // 禁止玩家移动（如果有必要）
+        playerTurn = false;
         // 例如，可以设置PlayerController的一个标志来禁止移动
 
         // 等待玩家移动后的等待时间
@@ -182,9 +184,9 @@ public class TrafficManager : MonoBehaviour
         yield return new WaitForSeconds(waitTimeAfterCarsMove);
 
         // 允许玩家再次操作
-        // 例如，重置PlayerController的标志以允许移动
+        playerTurn = true;
     }
-
+    #endregion
     #region Scene 格子显示
 #if UNITY_EDITOR
     // 在Unity编辑器的Scene视图中绘制格子

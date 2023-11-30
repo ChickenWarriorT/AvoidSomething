@@ -9,10 +9,10 @@ public class PlayerController : MonoBehaviour
     private int currentRow = 0; // 初始行位置
     private int currentColumn = 0; // 初始列位置
     private TrafficManager trafficManager;
-    //事件
-    public event Action OnPlayerMoved;
 
-    public bool canMove = true;
+    [Header("事件")]
+    public CarEventSO playerMovedEvent;
+
     void Start()
     {
         trafficManager = TrafficManager._instance;
@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (!canMove) return;
+        if (!trafficManager.playerTurn) return;
 
         // 检测玩家的输入并移动车辆
         if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -65,9 +65,8 @@ public class PlayerController : MonoBehaviour
     private void MoveUp()
     {
         if (currentRow < trafficManager.rows - 1)
-        {
-            //currentRow++;
-            //MoveToGridPosition();
+        {            
+            MoveToGridPosition();
         }
     }
 
@@ -87,6 +86,6 @@ public class PlayerController : MonoBehaviour
         Vector3 targetPosition = trafficManager.gridPositions[currentRow, currentColumn];
         //立即移动到目标为止
         transform.position = targetPosition;
-        OnPlayerMoved?.Invoke();
+        playerMovedEvent?.Raise();
     }
 }

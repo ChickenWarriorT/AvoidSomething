@@ -44,7 +44,7 @@ public class TrafficManagerEditor : Editor
     }
 
 
-
+    //生成格子预制体
     private void GenerateGridPrefabs(TrafficManager manager)
     {
         if (manager.gridPrefab == null)
@@ -110,6 +110,7 @@ public class TrafficManagerEditor : Editor
         }
     }
 
+    //根据格子预制体名字，获得格子网格坐标
     private Vector2Int WorldToGrid(GameObject gridPrefab, TrafficManager manager)
     {
         // 假设每个gridPrefab的名字或其他属性包含了它的网格坐标
