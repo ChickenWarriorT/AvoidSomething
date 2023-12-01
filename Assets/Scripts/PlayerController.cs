@@ -88,4 +88,13 @@ public class PlayerController : MonoBehaviour
         transform.position = targetPosition;
         playerMovedEvent?.Raise();
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Car")) // 假设其他车辆的标签是"Car"
+        {
+            trafficManager.playerTurn = false;
+            GameManager._instance.gameOverEvent.Raise();
+        }
+    }
 }
