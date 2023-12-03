@@ -23,7 +23,7 @@ public class TrafficManager : MonoBehaviour
     public int excludedRows = 5;
 
     private List<GameObject> cars = new List<GameObject>(); // 活动车辆列表
-    private HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();//已被占用格子
+    public HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();//已被占用格子
     private float cellWidth;
     [Header("格子高度")]
     [SerializeField]
@@ -158,6 +158,8 @@ public class TrafficManager : MonoBehaviour
             }
         }
     }
+
+
 
     //清除已占用位置
     private void ClearOccupiedPositions()

@@ -358,7 +358,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &524274195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -569,14 +569,14 @@ MonoBehaviour:
   carPrefabs:
   - {fileID: 589462625413882854, guid: 53060b365beb70c41be38188adcf34f4, type: 3}
   rows: 18
-  columns: 5
+  columns: 7
   waitTimeAfterPlayerMove: 0.2
   waitTimeAfterCarsMove: 0
   excludedRows: 4
   cellHeight: 10
   playerMovedEvent: {fileID: 11400000, guid: 9ebc79f938f18ab4b8dc2f8e8d63c49d, type: 2}
   playerTurn: 1
-  numOfCarsToSpawn: 20
+  numOfCarsToSpawn: 30
   isRandomSpawnCar: 1
 --- !u!1 &1070395077
 GameObject:
