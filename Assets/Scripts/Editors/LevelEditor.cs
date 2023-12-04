@@ -24,11 +24,6 @@ public class TrafficManagerEditor : Editor
         // 显示默认的inspector属性
         DrawDefaultInspector();
 
-        // 保存按钮
-        if (GUILayout.Button("Save Level"))
-        {
-            SaveLevel();
-        }
 
         serializedObject.ApplyModifiedProperties();
 
@@ -54,6 +49,23 @@ public class TrafficManagerEditor : Editor
         {
             isEditMode = !isEditMode;
             SceneView.RepaintAll(); // 更新 Scene 视图
+        }
+
+        if (GUILayout.Button("Save Level"))
+        {
+            string path = EditorUtility.SaveFilePanel("Save Level", "", "Level", "json");
+            if (!string.IsNullOrEmpty(path))
+            {
+                manager.SaveLevelData(path);
+            }
+        }
+        if (GUILayout.Button("Load Level"))
+        {
+            string path = EditorUtility.OpenFilePanel("Load Level", "", "json");
+            if (!string.IsNullOrEmpty(path))
+            {
+                manager.LoadLevelData(path);
+            }
         }
     }
 
@@ -116,6 +128,7 @@ public class TrafficManagerEditor : Editor
             {
                 DestroyImmediate(child.gameObject);
                 manager.occupiedCells.Clear();
+                manager.carsData.Clear();
             }
         }
     }
@@ -141,6 +154,7 @@ public class TrafficManagerEditor : Editor
                 SceneView.RepaintAll(); // 立即重绘场景视图
             }
         }
+
 
     }
 
@@ -178,8 +192,6 @@ public class TrafficManagerEditor : Editor
         }
         if (carPrefabs.arraySize > 0)
         {
-
-
             Debug.Log($"Placing car at: {gridPos.x}, {gridPos.y}");
             Vector3 spawnPosition = manager.gridPositions[gridPos.x, gridPos.y];
             GameObject carPrefab = carPrefabs.GetArrayElementAtIndex(0).objectReferenceValue as GameObject;
@@ -187,8 +199,7 @@ public class TrafficManagerEditor : Editor
             carPrefab.transform.position = spawnPosition;
             Debug.Log("spawnPosition"+ spawnPosition+";"+carPrefab.transform.position);
             manager.occupiedCells.Add(gridPos);
-
-
+            manager.carsData.Add(new CarData(gridPos, 0));
         }
     }
     private IEnumerator PlaceCarNextFrame(TrafficManager manager, Vector2Int gridPos)
@@ -198,12 +209,5 @@ public class TrafficManagerEditor : Editor
         // 然后创建车辆
         PlaceCar(manager, gridPos);
     }
-
-    private void SaveLevel()
-    {
-        // 实现保存关卡的逻辑
-        // 这里你需要收集所有的车辆数据并保存
-        TrafficManager manager = (TrafficManager)target;
-        // 示例：manager.SaveLevelData(收集的关卡数据, "保存路径");
-    }
 }
+

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.ConstrainedExecution;
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
@@ -22,6 +23,7 @@ public class TrafficManager : MonoBehaviour
     [Header("车辆初始化不会生成的格子")]
     public int excludedRows = 5;
 
+    [SerializeField]
     private List<GameObject> cars = new List<GameObject>(); // 活动车辆列表
     public HashSet<Vector2Int> occupiedCells = new HashSet<Vector2Int>();//已被占用格子
     private float cellWidth;
@@ -40,6 +42,10 @@ public class TrafficManager : MonoBehaviour
     public float CellHeight { get => cellHeight; }
 
     public bool isRandomSpawnCar;
+
+    public List<CarData> carsData = new List<CarData>();
+    public string levelDataPath;
+
     void Awake()
     {
         _instance = this;
@@ -67,6 +73,13 @@ public class TrafficManager : MonoBehaviour
     {
         if (isRandomSpawnCar)
             SpawnCars(numOfCarsToSpawn);
+        else
+            SpawnCarsByLevelData();
+    }
+
+    private void SpawnCarsByLevelData()
+    {
+        LoadLevelData(levelDataPath);
     }
 
     //初始化格子坐标
@@ -167,6 +180,32 @@ public class TrafficManager : MonoBehaviour
         occupiedCells.Clear();
     }
 
+    public void SaveLevelData(string path)
+    {
+        string jsonData = JsonUtility.ToJson(new Serialization<CarData>(carsData));
+        System.IO.File.WriteAllText(path, jsonData);
+    }
+    public void LoadLevelData(string path)
+    {
+        if (System.IO.File.Exists(path))
+        {
+            string jsonData = System.IO.File.ReadAllText(path);
+            carsData = JsonUtility.FromJson<Serialization<CarData>>(jsonData).ToList();
+
+            // 实例化每辆车
+            foreach (var carData in carsData)
+            {
+                Vector3 spawnPosition = gridPositions[carData.gridPosition.x, carData.gridPosition.y];
+                GameObject carPrefab = carPrefabs[carData.carPrefabIndex];
+                Instantiate(carPrefab, spawnPosition, Quaternion.identity, this.transform);
+
+                SpriteUtils.AdjustSizeToFitCell(carPrefab, cellWidth, cellHeight);
+
+                cars.Add(carPrefab);
+                occupiedCells.Add(new Vector2Int(carData.gridPosition.x, carData.gridPosition.y));
+            }
+        }
+    }
     #region 携程
 
     //
@@ -189,6 +228,7 @@ public class TrafficManager : MonoBehaviour
         playerTurn = true;
     }
     #endregion
+
     #region Scene 格子显示
 #if UNITY_EDITOR
     // 在Unity编辑器的Scene视图中绘制格子
