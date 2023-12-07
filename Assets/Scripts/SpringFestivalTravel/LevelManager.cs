@@ -9,6 +9,11 @@ public class LevelManager : MonoBehaviour
     [SerializeField]
     private float cellSize;
     public GameObject boundary;
+    public int numberOfLine;
+    public GameObject linePrefabA;
+    public GameObject linePrefabB;
+
+    
 
     private void OnDrawGizmos()
     {
