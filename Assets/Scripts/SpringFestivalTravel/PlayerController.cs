@@ -32,11 +32,13 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         inputDirection = inputControler.GamePlay.Move.ReadValue<Vector2>();
+        Debug.Log(inputDirection);
     }
 
     private void FixedUpdate()
     {
         Move();
+        speed += 1f;
     }
 
     private void Move()
