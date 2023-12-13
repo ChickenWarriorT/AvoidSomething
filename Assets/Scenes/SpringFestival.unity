@@ -897,9 +897,10 @@ MonoBehaviour:
   roadPrefab: {fileID: 4811441709723089159, guid: 7a77e327635847646b357dbb0b58fe40, type: 3}
   boundary: {fileID: 628598545}
   numberOfRoads: 5
-  numberOfStartGroups: 2
-  numberOfGroups: 0
+  numberOfStartGroups: 5
+  numberOfGroups: 10
   spaceBetweenRoads: 0.5
+  groupVerticalOffset: 0.5
   roadGroupsTransform: {fileID: 392714492}
   roads: []
   roadGroups: []

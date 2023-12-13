@@ -9,7 +9,7 @@ public class RoadManager : MonoBehaviour
     public int numberOfStartGroups;
     public int numberOfGroups;
     public float spaceBetweenRoads; // 车道之间的空隙宽度
-
+    public float groupVerticalOffset;
     public Transform roadGroupsTransform;
     public List<GameObject> roads;
     public List<GameObject> roadGroups;
@@ -41,12 +41,14 @@ public class RoadManager : MonoBehaviour
             GameObject roadGroup = new GameObject("RoadGroup_" + i);
             roadGroup.transform.parent = roadGroupsTransform;
             roadGroup.AddComponent<Rigidbody2D>().gravityScale = 0;
+            float yPos = i * (roadLength + groupVerticalOffset);
+            roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos);
 
             roadGroups.Add(roadGroup);
             GenerateLanes(roadWidth, roadLength, roadGroup.transform);
         }
     }
-    void GenerateLanes(float roadWidth, float roadLength, Transform parent)
+    void GenerateLanes(float roadWidth, float roadLength, Transform group)
     {
         Vector3 startPosition = boundary.transform.position - new Vector3(boundary.GetComponent<SpriteRenderer>().bounds.size.x / 2, 0, 0);
         float space = roadWidth + spaceBetweenRoads;
@@ -54,10 +56,10 @@ public class RoadManager : MonoBehaviour
         for (int i = 0; i < numberOfRoads; i++)
         {
             // 计算当前车道的位置
-            Vector3 lanePosition = startPosition + new Vector3(space * i + roadWidth / 2, 0, 0);
+            Vector3 lanePosition = startPosition + new Vector3(space * i + roadWidth / 2, group.position.y, 0);
 
             // 实例化RoadPrefab
-            GameObject road = Instantiate(roadPrefab, lanePosition, Quaternion.identity, parent);
+            GameObject road = Instantiate(roadPrefab, lanePosition, Quaternion.identity, group);
             //float scaleFactorX = 1 / boundary.transform.localScale.x; 
             //float scaleFactorY = 1 / boundary.transform.localScale.y; 
             //road.transform.localScale = new Vector3(roadWidth * scaleFactorX, roadLength * scaleFactorY, 1);
