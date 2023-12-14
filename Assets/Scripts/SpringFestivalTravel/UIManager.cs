@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public TextMeshProUGUI speedText; // 在编辑器中将此变量指向您的 UI Text 组件
+    public TextMeshProUGUI speedText; //速度UI
+    public TextMeshProUGUI distanceText; //路程UI
 
     void Update()
     {
