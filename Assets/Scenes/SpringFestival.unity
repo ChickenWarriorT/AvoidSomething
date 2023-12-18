@@ -382,6 +382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 1000
+  scaleSpeed: 100
 --- !u!50 &319293776
 Rigidbody2D:
   serializedVersion: 4
@@ -815,7 +816,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6897608632494010772, guid: 4ab98c7a550b23d4b8cbe692a5c3dde5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7903356334550759857, guid: 4ab98c7a550b23d4b8cbe692a5c3dde5, type: 3}
       propertyPath: speed
@@ -914,7 +915,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6897608632494010772, guid: 1e3cae3d6b70b13499429e36fd777afd, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8567753607427553926, guid: 1e3cae3d6b70b13499429e36fd777afd, type: 3}
       propertyPath: m_RootOrder
@@ -998,7 +999,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1259024168}
   - component: {fileID: 1259024167}
-  - component: {fileID: 1259024166}
   m_Layer: 0
   m_Name: BackGround_Camera
   m_TagString: Untagged
@@ -1006,14 +1006,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1259024166
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259024165}
-  m_Enabled: 1
 --- !u!20 &1259024167
 Camera:
   m_ObjectHideFlags: 0
@@ -1200,7 +1192,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roadPrefab: {fileID: 4811441709723089159, guid: 7a77e327635847646b357dbb0b58fe40, type: 3}
   boundary: {fileID: 628598545}
-  initNumberOfRoads: 1
+  initNumberOfRoads: 6
   numberOfStartGroups: 5
   numberOfGroups: 10
   spaceBetweenRoads: 0.5
@@ -1313,7 +1305,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6897608632494010772, guid: d63e16b5f1a94fb499aab97425ab7c60, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8567753607427553926, guid: d63e16b5f1a94fb499aab97425ab7c60, type: 3}
       propertyPath: m_RootOrder
@@ -1432,7 +1424,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speedText: {fileID: 650669575}
-  distanceText: {fileID: 0}
+  distanceText: {fileID: 608787575}
 --- !u!1 &2097928014
 GameObject:
   m_ObjectHideFlags: 0

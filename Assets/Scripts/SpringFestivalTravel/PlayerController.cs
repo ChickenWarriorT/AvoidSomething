@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 inputDirection;
     public float speed;
+    public float scaleSpeed = 100;
+    private float distance;
+    public float Distance { get => distance; }
 
     private void Awake()
     {
@@ -32,13 +35,13 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         inputDirection = inputControler.GamePlay.Move.ReadValue<Vector2>();
-        Debug.Log(inputDirection);
     }
 
     private void FixedUpdate()
     {
         Move();
-        speed += 1f;
+        //speed += 1f;
+        distance += speed / scaleSpeed * Time.deltaTime;
     }
 
     private void Move()
