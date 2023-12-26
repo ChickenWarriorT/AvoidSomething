@@ -7,8 +7,9 @@ public class RoadManager : MonoBehaviour
     public GameObject boundary; // 用来装所有车道的AreaPrefab
     public GameObject solidLinePrefab;
     public GameObject dashedLinePrefab;
+    public GameObject vehiclePrefab;
 
-    
+
     public int initNumberOfRoads; // 您希望的车道数
     public int numberOfStartGroups;
     public int numberOfGroups;
@@ -16,7 +17,7 @@ public class RoadManager : MonoBehaviour
     public float groupVerticalOffset;
     public Transform roadGroupsTransform;
     public List<GameObject> roads;
-    public List<GameObject> roadGroups;
+    public List<RoadGroup> roadGroupsList = new List<RoadGroup>();
     private float roadWidth;
     private float roadLength;
     private float roadGroupWidth;
@@ -48,7 +49,7 @@ public class RoadManager : MonoBehaviour
         if (CanGenerateNewGroup())
         {
             distanceForNewGroup += distanceGap;
-            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(1, initNumberOfRoads + 1));
+            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, initNumberOfRoads + 1));
         }
     }
 
@@ -83,26 +84,31 @@ public class RoadManager : MonoBehaviour
             GameObject roadGroup = new GameObject("RoadGroup");
             roadGroup.transform.parent = roadGroupsTransform;
             roadGroup.AddComponent<Rigidbody2D>().gravityScale = 0;
-
-            roadGroups.Add(roadGroup);
+            RoadGroup newRoadGroup = new RoadGroup(roadGroup, numberOfRoad, roadWidth, roadLength, vehiclePrefab);
+            roadGroupsList.Add(newRoadGroup);
             GenerateLines(roadWidth, roadLength, numberOfRoad, roadGroup.transform);
             roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos + i * (roadLength + groupVerticalOffset), 0);
         }
     }
 
+    /// <summary>
+    /// 生成所有道路线
+    /// </summary>
+    /// <param name="roadWidth"></param>
+    /// <param name="roadLength"></param>
+    /// <param name="numberOfRoad"></param>
+    /// <param name="group"></param>
     void GenerateLines(float roadWidth, float roadLength, int numberOfRoad, Transform group)
     {
-
-        // 计算第一条线的起始位置
-        Vector3 startPosition = boundary.transform.position
-                                - new Vector3(boundary.GetComponent<SpriteRenderer>().bounds.size.x / 2, 0, 0);
-        Debug.Log("Generating lines, Number of Roads: " + numberOfRoad);
+        float totalWidth = roadWidth * numberOfRoad;
+        // 计算起始位置的偏移，以使车道组居中
+        Vector3 centerPosition = boundary.transform.position;
+        Vector3 startPosition = new Vector3(centerPosition.x - totalWidth / 2, centerPosition.y, centerPosition.z);
         for (int i = 0; i <= numberOfRoad; i++)
         {
             GameObject linePrefab = (i == 0 || i == numberOfRoad) ? solidLinePrefab : dashedLinePrefab;
             if (linePrefab == null)
             {
-                Debug.LogError("Line prefab is null for index: " + i);
                 continue;
             }
             GameObject line = Instantiate(linePrefab, group);
@@ -123,9 +129,10 @@ public class RoadManager : MonoBehaviour
         RoadGroupsMover();
     }
 
+    //移动所有RoadGroups
     private void RoadGroupsMover()
     {
-        foreach (var roadGroup in roadGroups)
+        foreach (var roadGroup in roadGroupsList)
         {
             var rb = roadGroup.GetComponent<Rigidbody2D>();
             var playerSpeed = PlayerController._instance.speed;
@@ -133,14 +140,18 @@ public class RoadManager : MonoBehaviour
         }
     }
 
+    //计算下一个RoadGroup的Y轴位置
     private float CalculateNextGroupYPosition()
     {
-        if (roadGroups.Count > 0)
+        if (roadGroupsList.Count > 0)
         {
             // 获取最后一个 roadGroup 的位置
-            GameObject lastGroup = roadGroups[roadGroups.Count - 1];
-            return lastGroup.transform.position.y + roadLength + groupVerticalOffset;
+            RoadGroup lastGroup = roadGroupsList[roadGroupsList.Count - 1];
+            GameObject roadGroupObject = lastGroup.roadGroupObject;
+            return roadGroupObject.transform.position.y + roadLength + groupVerticalOffset;
         }
         return 0;
     }
+
+
 }
