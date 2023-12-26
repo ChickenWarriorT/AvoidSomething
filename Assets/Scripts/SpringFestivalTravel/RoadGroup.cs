@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 [Serializable]
-public class RoadGroup : MonoBehaviour
+public class RoadGroup
 {
     public GameObject roadGroupObject;
     public int numberOfRoad;
@@ -13,16 +13,19 @@ public class RoadGroup : MonoBehaviour
     private float roadLength;
     public List<Vector2> roadPositions;
     private float minVehicleSpacing = 2f;
-    public RoadGroup(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab)
+    private int vehicleNum;
+    public RoadGroup(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab, int num)
     {
+        roadGroupObject = obj;
         roadGroupObject = obj;
         numberOfRoad = numRoads;
         roadWidth = width;
         roadLength = length;
         vehicles = new List<GameObject>();
         roadPositions = new List<Vector2>();
+        vehicleNum = num;
         CalculateRoadPositions();
-        GenerateVehicleOnRandomRoad(vehiclePrefab);
+        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum);
 
     }
 
@@ -37,19 +40,25 @@ public class RoadGroup : MonoBehaviour
             roadPositions.Add(roadPosition);
         }
     }
-    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab)
+    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab, int num)
     {
-        int roadIndex = UnityEngine.Random.Range(0, roadPositions.Count);
-        Vector3 roadPosition = roadPositions[roadIndex];
+        for (int i = 0; i < num; i++)
+        {
 
-        // 计算一个合适的位置，避免与其他车辆重叠
-        Vector3 vehiclePosition = CalculateVehiclePosition(roadPosition);
+            int roadIndex = UnityEngine.Random.Range(0, roadPositions.Count);
+            Vector3 roadPosition = roadPositions[roadIndex];
 
-        GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, vehiclePosition, Quaternion.identity, roadGroupObject.transform);
-        vehicles.Add(newVehicle);
+            // 计算一个合适的位置，避免与其他车辆重叠
+            Vector3 vehiclePosition = CalculateVehiclePosition(roadPosition);
+
+            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, vehiclePosition, Quaternion.identity, roadGroupObject.transform);
+            vehicles.Add(newVehicle);
+        }
     }
     private Vector3 CalculateVehiclePosition(Vector3 roadPosition)
     {
+        int maxAttempts = 50;
+        int attempts = 0;
         Vector3 position;
         bool positionFound;
 
@@ -67,6 +76,11 @@ public class RoadGroup : MonoBehaviour
                     positionFound = false;
                     break;
                 }
+            }
+            attempts++;
+            if (attempts > maxAttempts)
+            {
+                return roadPosition;
             }
         } while (!positionFound);
 

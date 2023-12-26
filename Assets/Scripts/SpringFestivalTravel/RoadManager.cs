@@ -36,7 +36,7 @@ public class RoadManager : MonoBehaviour
         roadWidth = CalculateRoadWidth(roadGroupWidth, initNumberOfRoads);
 
         // 初始生成车道组
-        GenerateRoadGroups(roadWidth, roadLength, numberOfStartGroups, initNumberOfRoads);
+        GenerateRoadGroups(roadWidth, roadLength, numberOfStartGroups, initNumberOfRoads,3);
         distanceForNewGroup = distanceGap;
     }
 
@@ -44,12 +44,12 @@ public class RoadManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, 5));
+            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, 5),10);
         }
         if (CanGenerateNewGroup())
         {
             distanceForNewGroup += distanceGap;
-            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, initNumberOfRoads + 1));
+            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, initNumberOfRoads + 1),10);
         }
     }
 
@@ -76,7 +76,7 @@ public class RoadManager : MonoBehaviour
     /// <param name="roadLength">道路长度</param>
     /// <param name="numberOfNewGroups">道路组数量</param>
     /// <param name="numberOfRoad">道路数量</param>
-    private void GenerateRoadGroups(float roadWidth, float roadLength, int numberOfNewGroups, int numberOfRoad)
+    private void GenerateRoadGroups(float roadWidth, float roadLength, int numberOfNewGroups, int numberOfRoad, int numOfVehicle)
     {
         float yPos = CalculateNextGroupYPosition();
         for (int i = 0; i < numberOfNewGroups; i++)
@@ -84,7 +84,7 @@ public class RoadManager : MonoBehaviour
             GameObject roadGroup = new GameObject("RoadGroup");
             roadGroup.transform.parent = roadGroupsTransform;
             roadGroup.AddComponent<Rigidbody2D>().gravityScale = 0;
-            RoadGroup newRoadGroup = new RoadGroup(roadGroup, numberOfRoad, roadWidth, roadLength, vehiclePrefab);
+            RoadGroup newRoadGroup = new RoadGroup(roadGroup, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
             roadGroupsList.Add(newRoadGroup);
             GenerateLines(roadWidth, roadLength, numberOfRoad, roadGroup.transform);
             roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos + i * (roadLength + groupVerticalOffset), 0);
@@ -134,7 +134,7 @@ public class RoadManager : MonoBehaviour
     {
         foreach (var roadGroup in roadGroupsList)
         {
-            var rb = roadGroup.GetComponent<Rigidbody2D>();
+            var rb = roadGroup.roadGroupObject.GetComponent<Rigidbody2D>();
             var playerSpeed = PlayerController._instance.speed;
             rb.velocity = Vector2.down * playerSpeed * Time.deltaTime; // 使车道组下移动，速度等于玩家速度
         }
