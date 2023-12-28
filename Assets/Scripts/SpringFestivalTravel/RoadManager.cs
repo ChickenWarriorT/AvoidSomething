@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class RoadManager : MonoBehaviour
 {
+    public static RoadManager _instance;
     public GameObject roadPrefab; // 用来放置车道的Prefab
     public GameObject boundary; // 用来装所有车道的AreaPrefab
     public GameObject solidLinePrefab;
@@ -24,6 +25,10 @@ public class RoadManager : MonoBehaviour
 
     private float distanceForNewGroup = 0;
     private float distanceGap = 50f;
+    private void Awake()
+    {
+        _instance = this;
+    }
     void Start()
     {
         // 获取AreaPrefab的宽度
@@ -81,11 +86,13 @@ public class RoadManager : MonoBehaviour
         float yPos = CalculateNextGroupYPosition();
         for (int i = 0; i < numberOfNewGroups; i++)
         {
-            GameObject roadGroup = new GameObject("RoadGroup");
-            roadGroup.transform.parent = roadGroupsTransform;
-            roadGroup.AddComponent<Rigidbody2D>().gravityScale = 0;
-            RoadGroup newRoadGroup = new RoadGroup(roadGroup, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
-            roadGroupsList.Add(newRoadGroup);
+            GameObject roadGroupPrefab = new GameObject("RoadGroup");
+            roadGroupPrefab.transform.parent = roadGroupsTransform;
+            roadGroupPrefab.AddComponent<Rigidbody2D>().gravityScale = 0;
+            RoadGroup roadGroup = roadGroupPrefab.AddComponent<RoadGroup>();
+            roadGroup.Init(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
+           // RoadGroup newRoadGroup = new RoadGroup(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
+            roadGroupsList.Add(roadGroup);
             GenerateLines(roadWidth, roadLength, numberOfRoad, roadGroup.transform);
             roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos + i * (roadLength + groupVerticalOffset), 0);
         }

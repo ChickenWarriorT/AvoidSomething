@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-[Serializable]
-public class RoadGroup
+
+public class RoadGroup : MonoBehaviour
 {
     public GameObject roadGroupObject;
     public int numberOfRoad;
@@ -14,6 +14,26 @@ public class RoadGroup
     public List<Vector2> roadPositions;
     private float minVehicleSpacing = 2f;
     private int vehicleNum;
+
+    private float destroyYAxis;
+    public void Init(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab, int num)
+    {
+        roadGroupObject = obj;
+        roadGroupObject = obj;
+        numberOfRoad = numRoads;
+        roadWidth = width;
+        roadLength = length;
+        vehicles = new List<GameObject>();
+        roadPositions = new List<Vector2>();
+        vehicleNum = num;
+        CalculateRoadPositions();
+        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum);
+        destroyYAxis = RoadManager._instance.boundary.GetComponent<SpriteRenderer>().bounds.min.y - length;
+    }
+    private void FixedUpdate()
+    {
+        CheckBoundary();
+    }
     public RoadGroup(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab, int num)
     {
         roadGroupObject = obj;
@@ -85,6 +105,13 @@ public class RoadGroup
         } while (!positionFound);
 
         return position;
+    }
+    private void CheckBoundary()
+    {
+        if (transform.position.y < destroyYAxis)
+        {
+            Destroy(gameObject);
+        }
     }
 }
 
