@@ -27,7 +27,7 @@ public class RoadGroup : MonoBehaviour
         roadPositions = new List<Vector2>();
         vehicleNum = num;
         CalculateRoadPositions();
-        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum);
+        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum, RoadManager._instance.vehiclesContainer.transform);
         destroyYAxis = RoadManager._instance.boundary.GetComponent<SpriteRenderer>().bounds.min.y - length;
     }
     private void FixedUpdate()
@@ -45,7 +45,7 @@ public class RoadGroup : MonoBehaviour
         roadPositions = new List<Vector2>();
         vehicleNum = num;
         CalculateRoadPositions();
-        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum);
+        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum, RoadManager._instance.vehiclesContainer.transform);
 
     }
 
@@ -60,18 +60,19 @@ public class RoadGroup : MonoBehaviour
             roadPositions.Add(roadPosition);
         }
     }
-    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab, int num)
+    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab, int num, Transform vehiclesContainer)
     {
         for (int i = 0; i < num; i++)
         {
 
             int roadIndex = UnityEngine.Random.Range(0, roadPositions.Count);
             Vector3 roadPosition = roadPositions[roadIndex];
+            Vector3 worldRoadPosition = roadGroupObject.transform.TransformPoint(roadPosition);
 
             // 计算一个合适的位置，避免与其他车辆重叠
-            Vector3 vehiclePosition = CalculateVehiclePosition(roadPosition);
+            Vector3 vehiclePosition = CalculateVehiclePosition(worldRoadPosition);
 
-            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, vehiclePosition, Quaternion.identity, roadGroupObject.transform);
+            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, vehiclePosition, Quaternion.identity, vehiclesContainer);
             vehicles.Add(newVehicle);
         }
     }
@@ -111,6 +112,7 @@ public class RoadGroup : MonoBehaviour
         if (transform.position.y < destroyYAxis)
         {
             Destroy(gameObject);
+            RoadManager._instance.roadGroupsList.Remove(this);
         }
     }
 }

@@ -1239,10 +1239,11 @@ MonoBehaviour:
   solidLinePrefab: {fileID: 5051178883798880729, guid: 4be5d7681b92f104ea88c9893288d632, type: 3}
   dashedLinePrefab: {fileID: 5051178883798880729, guid: d9e33ae9531440945b4ee454a137171a, type: 3}
   vehiclePrefab: {fileID: 6897608632494010772, guid: 1e3cae3d6b70b13499429e36fd777afd, type: 3}
+  vehiclesContainer: {fileID: 2126874319}
   initNumberOfRoads: 12
   numberOfStartGroups: 5
   numberOfGroups: 10
-  groupVerticalOffset: 0.5
+  groupVerticalOffset: 0
   roadGroupsTransform: {fileID: 392714492}
   roads: []
   roadGroupsList: []
@@ -1504,6 +1505,37 @@ Transform:
   - {fileID: 2063081212}
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2126874318
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2126874319}
+  m_Layer: 0
+  m_Name: VehiclesContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2126874319
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126874318}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &8237738502837020594
 PrefabInstance:

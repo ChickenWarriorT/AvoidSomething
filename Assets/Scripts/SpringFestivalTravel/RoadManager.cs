@@ -4,12 +4,14 @@ using UnityEngine;
 public class RoadManager : MonoBehaviour
 {
     public static RoadManager _instance;
+
     public GameObject roadPrefab; // 用来放置车道的Prefab
     public GameObject boundary; // 用来装所有车道的AreaPrefab
     public GameObject solidLinePrefab;
     public GameObject dashedLinePrefab;
     public GameObject vehiclePrefab;
 
+    public Transform vehiclesContainer;
 
     public int initNumberOfRoads; // 您希望的车道数
     public int numberOfStartGroups;
@@ -60,7 +62,6 @@ public class RoadManager : MonoBehaviour
 
     bool CanGenerateNewGroup()
     {
-
         if (PlayerController._instance.Distance >= distanceForNewGroup)
         {
             return true;
@@ -91,6 +92,7 @@ public class RoadManager : MonoBehaviour
             roadGroupPrefab.AddComponent<Rigidbody2D>().gravityScale = 0;
             RoadGroup roadGroup = roadGroupPrefab.AddComponent<RoadGroup>();
             roadGroup.Init(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
+            
            // RoadGroup newRoadGroup = new RoadGroup(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
             roadGroupsList.Add(roadGroup);
             GenerateLines(roadWidth, roadLength, numberOfRoad, roadGroup.transform);
