@@ -12,7 +12,7 @@ public class RoadGroup : MonoBehaviour
     private float roadWidth;
     private float roadLength;
     public List<Vector2> roadPositions;
-    private float minVehicleSpacing = 2f;
+    private float minVehicleSpacing = 5f;
     private int vehicleNum;
 
     private float destroyYAxis;
@@ -34,26 +34,12 @@ public class RoadGroup : MonoBehaviour
     {
         CheckBoundary();
     }
-    public RoadGroup(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab, int num)
-    {
-        roadGroupObject = obj;
-        roadGroupObject = obj;
-        numberOfRoad = numRoads;
-        roadWidth = width;
-        roadLength = length;
-        vehicles = new List<GameObject>();
-        roadPositions = new List<Vector2>();
-        vehicleNum = num;
-        CalculateRoadPositions();
-        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum, RoadManager._instance.vehiclesContainer.transform);
-
-    }
 
     public void CalculateRoadPositions()
     {
         float totalWidth = roadWidth * numberOfRoad;
         Vector3 centerPosition = roadGroupObject.transform.position;
-        Vector3 startPosition = new Vector3(centerPosition.x - totalWidth / 2 + roadWidth, centerPosition.y, centerPosition.z);
+        Vector3 startPosition = new Vector3(centerPosition.x - totalWidth / 2 + roadWidth / 2, centerPosition.y, centerPosition.z);
         for (int i = 0; i < numberOfRoad; i++)
         {
             Vector3 roadPosition = startPosition + new Vector3(i * roadWidth, 0, 0);
@@ -70,43 +56,43 @@ public class RoadGroup : MonoBehaviour
             Vector3 worldRoadPosition = roadGroupObject.transform.TransformPoint(roadPosition);
 
             // 计算一个合适的位置，避免与其他车辆重叠
-            Vector3 vehiclePosition = CalculateVehiclePosition(worldRoadPosition);
+            //Vector3 vehiclePosition = CalculateVehiclePosition(roadPosition, vehiclePrefab);
 
-            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, vehiclePosition, Quaternion.identity, vehiclesContainer);
+            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, worldRoadPosition, Quaternion.identity, vehiclesContainer);
             vehicles.Add(newVehicle);
         }
     }
-    private Vector3 CalculateVehiclePosition(Vector3 roadPosition)
-    {
-        int maxAttempts = 50;
-        int attempts = 0;
-        Vector3 position;
-        bool positionFound;
+    //private Vector3 CalculateVehiclePosition(Vector3 roadPosition, GameObject vehicle)
+    //{
+    //    int maxAttempts = 50;
+    //    int attempts = 0;
+    //    Vector3 position;
+    //    bool positionFound;
+    //    float vehicleLength = vehicle.GetComponent<SpriteRenderer>().bounds.size.y;
+    //    do
+    //    {
+    //        positionFound = true;
+    //        float yPos = roadPosition.y + UnityEngine.Random.Range(vehicleLength, vehicleLength * 2);
+    //        position = new Vector3(roadPosition.x, yPos, roadPosition.z);
 
-        do
-        {
-            positionFound = true;
-            float yPos = roadPosition.y + UnityEngine.Random.Range(-roadWidth / 2, roadWidth / 2);
-            position = new Vector3(roadPosition.x, yPos, roadPosition.z);
+    //        // 检查与现有车辆的距离
+    //        foreach (var v in vehicles)
+    //        {
+    //            if (Vector3.Distance(v.transform.position, position) < minVehicleSpacing)
+    //            {
+    //                positionFound = false;
+    //                break;
+    //            }
+    //        }
+    //        attempts++;
+    //        if (attempts > maxAttempts)
+    //        {
+    //            return roadPosition;
+    //        }
+    //    } while (!positionFound);
 
-            // 检查与现有车辆的距离
-            foreach (var vehicle in vehicles)
-            {
-                if (Vector3.Distance(vehicle.transform.position, position) < minVehicleSpacing)
-                {
-                    positionFound = false;
-                    break;
-                }
-            }
-            attempts++;
-            if (attempts > maxAttempts)
-            {
-                return roadPosition;
-            }
-        } while (!positionFound);
-
-        return position;
-    }
+    //    return position;
+    //}
     private void CheckBoundary()
     {
         if (transform.position.y < destroyYAxis)
