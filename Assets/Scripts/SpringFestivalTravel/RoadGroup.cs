@@ -6,39 +6,58 @@ using System;
 
 public class RoadGroup : MonoBehaviour
 {
-    public GameObject roadGroupObject;
-    public int numberOfRoad;
     public List<GameObject> vehicles;
+    public List<Vector2> roadPositions;
+    public List<Vector3> gridPositions;
+
+    public int numberOfRoad;
+    public float maxVerticalOffset;
+
+
     private float roadWidth;
     private float roadLength;
-    public List<Vector2> roadPositions;
-    private float minVehicleSpacing = 5f;
+    private float minVehicleSpacing = 10f;
     private int vehicleNum;
 
     private float destroyYAxis;
-    public void Init(GameObject obj, int numRoads, float width, float length, GameObject vehiclePrefab, int num)
+
+    public void Init(int numRoads, float width, float length, GameObject vehiclePrefab, int num)
     {
-        roadGroupObject = obj;
-        roadGroupObject = obj;
-        numberOfRoad = numRoads;
+         numberOfRoad = numRoads;
         roadWidth = width;
         roadLength = length;
         vehicles = new List<GameObject>();
         roadPositions = new List<Vector2>();
         vehicleNum = num;
         CalculateRoadPositions();
-        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum, RoadManager._instance.vehiclesContainer.transform);
+        CalculateGridPositions();
+        GenerateVehicleOnRandomRoad(vehiclePrefab, vehicleNum);
         destroyYAxis = RoadManager._instance.boundary.GetComponent<SpriteRenderer>().bounds.min.y - length;
     }
     private void FixedUpdate()
     {
         CheckBoundary();
     }
+    private void CalculateGridPositions()
+    {
+        gridPositions = new List<Vector3>();
+        // 计算每条道路的格子位置
+        float roadStartY = transform.position.y - roadLength / 2;
+        float roadEndY = roadStartY + roadLength;
+        Debug.Log(roadStartY);
+        for (int i = 0; i < numberOfRoad; i++)
+        {
 
+            for (float y = roadStartY; y < roadEndY; y += minVehicleSpacing)
+            {
+                gridPositions.Add(new Vector3(roadPositions[i].x, y, 0));
+            }
+        }
+    }
     public void CalculateRoadPositions()
     {
         float totalWidth = roadWidth * numberOfRoad;
-        Vector3 centerPosition = roadGroupObject.transform.position;
+        Vector3 centerPosition = transform.position;
         Vector3 startPosition = new Vector3(centerPosition.x - totalWidth / 2 + roadWidth / 2, centerPosition.y, centerPosition.z);
         for (int i = 0; i < numberOfRoad; i++)
         {
@@ -46,59 +65,41 @@ public class RoadGroup : MonoBehaviour
             roadPositions.Add(roadPosition);
         }
     }
-    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab, int num, Transform vehiclesContainer)
+    public void GenerateVehicleOnRandomRoad(GameObject vehiclePrefab, int num)
     {
         for (int i = 0; i < num; i++)
         {
+            if (gridPositions.Count == 0)
+            {
+                break;
+            }
+            int index = UnityEngine.Random.Range(0, gridPositions.Count);
+            Vector3 position = gridPositions[index];
+            position.y += UnityEngine.Random.Range(-maxVerticalOffset, maxVerticalOffset); // 加上随机的上下偏移
 
-            int roadIndex = UnityEngine.Random.Range(0, roadPositions.Count);
-            Vector3 roadPosition = roadPositions[roadIndex];
-            Vector3 worldRoadPosition = roadGroupObject.transform.TransformPoint(roadPosition);
 
-            // 计算一个合适的位置，避免与其他车辆重叠
-            //Vector3 vehiclePosition = CalculateVehiclePosition(roadPosition, vehiclePrefab);
-
-            GameObject newVehicle = GameObject.Instantiate(vehiclePrefab, worldRoadPosition, Quaternion.identity, vehiclesContainer);
+            GameObject newVehicle = Instantiate(vehiclePrefab, position, Quaternion.identity);
             vehicles.Add(newVehicle);
+
+            gridPositions.RemoveAt(index); // 移除已经使用的位置
         }
     }
-    //private Vector3 CalculateVehiclePosition(Vector3 roadPosition, GameObject vehicle)
-    //{
-    //    int maxAttempts = 50;
-    //    int attempts = 0;
-    //    Vector3 position;
-    //    bool positionFound;
-    //    float vehicleLength = vehicle.GetComponent<SpriteRenderer>().bounds.size.y;
-    //    do
-    //    {
-    //        positionFound = true;
-    //        float yPos = roadPosition.y + UnityEngine.Random.Range(vehicleLength, vehicleLength * 2);
-    //        position = new Vector3(roadPosition.x, yPos, roadPosition.z);
 
-    //        // 检查与现有车辆的距离
-    //        foreach (var v in vehicles)
-    //        {
-    //            if (Vector3.Distance(v.transform.position, position) < minVehicleSpacing)
-    //            {
-    //                positionFound = false;
-    //                break;
-    //            }
-    //        }
-    //        attempts++;
-    //        if (attempts > maxAttempts)
-    //        {
-    //            return roadPosition;
-    //        }
-    //    } while (!positionFound);
-
-    //    return position;
-    //}
     private void CheckBoundary()
     {
         if (transform.position.y < destroyYAxis)
         {
             Destroy(gameObject);
             RoadManager._instance.roadGroupsList.Remove(this);
+        }
+    }
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow; // 设置格子颜色，例如黄色
+        foreach (var gridPosition in gridPositions)
+        {
+            float gizmoSize = 0.5f; // 设置格子大小
+            Gizmos.DrawCube(gridPosition, new Vector3(gizmoSize, gizmoSize, gizmoSize));
         }
     }
 }

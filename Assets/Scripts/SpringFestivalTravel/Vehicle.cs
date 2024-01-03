@@ -16,7 +16,7 @@ public class Vehicle : MonoBehaviour
     private void Start()
     {
         destroyYAxis = RoadManager._instance.boundary.GetComponent<SpriteRenderer>().bounds.min.y- this.GetComponent<SpriteRenderer>().bounds.size.y;
-        Debug.Log(destroyYAxis);
+        //Debug.Log(destroyYAxis);
     }
     private void FixedUpdate()
     {

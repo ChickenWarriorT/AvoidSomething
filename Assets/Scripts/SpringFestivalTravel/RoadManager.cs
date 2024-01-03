@@ -26,7 +26,7 @@ public class RoadManager : MonoBehaviour
     private float roadGroupWidth;
 
     private float distanceForNewGroup = 0;
-    private float distanceGap = 50f;
+    private float distanceGap = 20f;
     private void Awake()
     {
         _instance = this;
@@ -36,27 +36,27 @@ public class RoadManager : MonoBehaviour
         // 获取AreaPrefab的宽度
         roadGroupWidth = boundary.GetComponent<SpriteRenderer>().bounds.size.x;
         float roadGroupLength = boundary.GetComponent<SpriteRenderer>().bounds.size.y;
-        Debug.Log(roadGroupLength);
+        //Debug.Log(roadGroupLength);
         roadLength = roadGroupLength;
 
         // 计算每个车道的宽度
         roadWidth = CalculateRoadWidth(roadGroupWidth, initNumberOfRoads);
 
         // 初始生成车道组
-        GenerateRoadGroups(roadWidth, roadLength, numberOfStartGroups, initNumberOfRoads,3);
-        distanceForNewGroup = distanceGap;
+        GenerateRoadGroups(roadWidth, roadLength, numberOfStartGroups, initNumberOfRoads, 0);
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, 5),10);
-        }
+        //if (CanGenerateNewGroup())
+        //{
+        //    distanceForNewGroup += distanceGap;
+        //    GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, initNumberOfRoads + 1),10);
+        //} 
         if (CanGenerateNewGroup())
         {
             distanceForNewGroup += distanceGap;
-            GenerateRoadGroups(roadWidth, roadLength, 1, Random.Range(2, initNumberOfRoads + 1),10);
+            GenerateRoadGroups(roadWidth, roadLength, 1, initNumberOfRoads, 10);
         }
     }
 
@@ -91,12 +91,12 @@ public class RoadManager : MonoBehaviour
             roadGroupPrefab.transform.parent = roadGroupsTransform;
             roadGroupPrefab.AddComponent<Rigidbody2D>().gravityScale = 0;
             RoadGroup roadGroup = roadGroupPrefab.AddComponent<RoadGroup>();
-            roadGroup.Init(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
-            
-           // RoadGroup newRoadGroup = new RoadGroup(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
+            roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos + i * (roadLength + groupVerticalOffset), 0);
+            roadGroup.Init(numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
+
+            // RoadGroup newRoadGroup = new RoadGroup(roadGroupPrefab, numberOfRoad, roadWidth, roadLength, vehiclePrefab, numOfVehicle);
             roadGroupsList.Add(roadGroup);
             GenerateLines(roadWidth, roadLength, numberOfRoad, roadGroup.transform);
-            roadGroup.transform.position = new Vector3(roadGroup.transform.position.x, yPos + i * (roadLength + groupVerticalOffset), 0);
         }
     }
 
@@ -143,7 +143,7 @@ public class RoadManager : MonoBehaviour
     {
         foreach (var roadGroup in roadGroupsList)
         {
-            var rb = roadGroup.roadGroupObject.GetComponent<Rigidbody2D>();
+            var rb = roadGroup.GetComponent<Rigidbody2D>();
             var playerSpeed = PlayerController._instance.speed;
             rb.velocity = Vector2.down * playerSpeed * Time.deltaTime; // 使车道组下移动，速度等于玩家速度
         }
@@ -156,7 +156,7 @@ public class RoadManager : MonoBehaviour
         {
             // 获取最后一个 roadGroup 的位置
             RoadGroup lastGroup = roadGroupsList[roadGroupsList.Count - 1];
-            GameObject roadGroupObject = lastGroup.roadGroupObject;
+            GameObject roadGroupObject = lastGroup.gameObject;
             return roadGroupObject.transform.position.y + roadLength + groupVerticalOffset;
         }
         return 0;
